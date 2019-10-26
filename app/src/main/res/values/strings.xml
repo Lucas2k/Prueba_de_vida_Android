@@ -5,4 +5,9 @@
     <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
     <string name="not_ready_message">Why so serious? :)</string>
     <string name="ready_message">Just wink now</string>
+
+    <string name="need_smile">por favor sonrie</string>
+    <string name="need_wink_left">Guiña el ojo izquierdo</string>
+    <string name="need_wink_rigth">Guiña el ojo derecho</string>
+    <string name="take_photo">Tomando foto...</string>
 </resources>

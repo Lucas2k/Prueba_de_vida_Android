@@ -43,10 +43,23 @@ class FaceGraphic extends GraphicOverlay.Graphic {
     private final String mNotReadyMessage;
     private final String mReadyMessage;
 
+    private   int status =0;
+    private final String take_photoMessage;
+    private final String need_smileMessage;
+    private final String need_wink_leftMessage;
+    private final String need_wink_rigthMessage;
+
     FaceGraphic(GraphicOverlay overlay) {
         super(overlay);
         mNotReadyMessage = overlay.getContext().getResources().getString(R.string.not_ready_message);
         mReadyMessage = overlay.getContext().getResources().getString(R.string.ready_message);
+
+        take_photoMessage = overlay.getContext().getResources().getString(R.string.take_photo);
+        need_smileMessage = overlay.getContext().getResources().getString(R.string.need_smile);
+        need_wink_leftMessage = overlay.getContext().getResources().getString(R.string.need_wink_left);
+        need_wink_rigthMessage = overlay.getContext().getResources().getString(R.string.need_wink_rigth);
+
+
         mPaint = new Paint();
         mPaint.setColor(INVALID_COLOR);
         mPaint.setStyle(Paint.Style.STROKE);
@@ -59,8 +72,10 @@ class FaceGraphic extends GraphicOverlay.Graphic {
     }
 
 
-    void setIsReady(boolean isValid) {
+    void setIsReady(boolean isValid, int status) {
         this.mIsReady = isValid;
+        this.status = status;
+
         mPaint.setColor(isValid ? VALID_COLOR : INVALID_COLOR);
     }
 
@@ -88,8 +103,6 @@ class FaceGraphic extends GraphicOverlay.Graphic {
         float x = translateX(face.getPosition().x + face.getWidth() / 2);
         float y = translateY(face.getPosition().y + face.getHeight() / 2);
 
-
-
         // Draws a bounding box around the face.
         float xOffset = scaleX(face.getWidth() / 2.0f);
         float yOffset = scaleY(face.getHeight() / 2.0f);
@@ -98,7 +111,30 @@ class FaceGraphic extends GraphicOverlay.Graphic {
         float right = x + xOffset;
         float bottom = y + yOffset;
 
-        canvas.drawText(mIsReady ? mReadyMessage : mNotReadyMessage, left, top - LABEL_Y_OFFSET, mPaint);
+        if(status == 1){
+            canvas.drawText(need_smileMessage, left, top - LABEL_Y_OFFSET, mPaint);
+        }
+        else if(status == 2){
+            canvas.drawText(take_photoMessage, left, top - LABEL_Y_OFFSET, mPaint);
+        }
+        else if(status == 3){
+            canvas.drawText(need_wink_leftMessage, left, top - LABEL_Y_OFFSET, mPaint);
+        }
+        else if(status == 4){
+            canvas.drawText(take_photoMessage, left, top - LABEL_Y_OFFSET, mPaint);
+        }
+        else if(status == 5){
+            canvas.drawText(need_wink_rigthMessage, left, top - LABEL_Y_OFFSET, mPaint);
+        }
+        else if(status == 6){
+            canvas.drawText(take_photoMessage, left, top - LABEL_Y_OFFSET, mPaint);
+        }
+        else if(status == 7){
+            canvas.drawText("Gracias eso es todo!", left, top - LABEL_Y_OFFSET, mPaint);
+        }else{
+           // canvas.drawText(mIsReady ? , left, top - LABEL_Y_OFFSET, mPaint);
+        }
+
 
         canvas.drawRect(left, top, right, bottom, mPaint);
     }

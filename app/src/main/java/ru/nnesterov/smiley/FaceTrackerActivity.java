@@ -302,11 +302,21 @@ public final class FaceTrackerActivity extends AppCompatActivity {
      * Face tracker for each detected individual. This maintains a face graphic within the app's
      * associated face overlay.
      */
+
+    private int currentStatus = 0;
+    private boolean _smile = false;
+    private boolean _wink_l = false;
+    private boolean _wink_r = false;
+    private boolean _face = false;
+
+
     private class GraphicFaceTracker extends Tracker<Face> {
         private static final double SMILING_THRESHOLD = 0.4;
-        private static final double WINK_THRESHOLD = 0.5;
+        private static final double WINK_THRESHOLD = 0.3;
         private GraphicOverlay mOverlay;
         private FaceGraphic mFaceGraphic;
+
+        private long tStart = 0;
 
         GraphicFaceTracker(GraphicOverlay overlay) {
             mOverlay = overlay;
@@ -324,20 +334,94 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         /**
          * Update the position/characteristics of the face within the overlay.
          */
+
+
         @Override
         public void onUpdate(FaceDetector.Detections<Face> detectionResults, Face face) {
             mOverlay.add(mFaceGraphic);
-            boolean isSmiling = face.getIsSmilingProbability() > SMILING_THRESHOLD;
-            if (isSmiling) {
-                float leftEye = face.getIsLeftEyeOpenProbability();
-                float rightEye = face.getIsRightEyeOpenProbability();
-                if (Math.abs(leftEye - rightEye) >= WINK_THRESHOLD) {
-                    takeShot();
+
+            long tEnd = System.currentTimeMillis();
+            long tDelta = tEnd - tStart;
+            double elapsedSeconds = tDelta / 1000.0;
+
+            Log.d("Hairol", "tiempo: " + String.valueOf(elapsedSeconds) + " ststus: " + String.valueOf(currentStatus));
+
+            if (_face && _smile && !_wink_l && !_wink_r) {
+                if (elapsedSeconds >= 5 && currentStatus == 2) {
+                    currentStatus = 3;
+                    mFaceGraphic.setIsReady(true, 3);
+                    mFaceGraphic.updateFace(face);
+                    tStart = System.currentTimeMillis();
                 }
             }
 
-            mFaceGraphic.setIsReady(isSmiling);
-            mFaceGraphic.updateFace(face);
+            if (_face && _smile && _wink_l && !_wink_r) {
+                if (elapsedSeconds >= 5 && currentStatus == 4) {
+                    currentStatus = 5;
+                    mFaceGraphic.setIsReady(true, 5);
+                    mFaceGraphic.updateFace(face);
+                    tStart = System.currentTimeMillis();
+                }
+            }
+
+            if (_face && _smile && _wink_l && _wink_r) {
+                if (elapsedSeconds >= 5 && currentStatus == 6) {
+                    currentStatus = 7;
+                    mFaceGraphic.setIsReady(true, 7);
+                    mFaceGraphic.updateFace(face);
+                    tStart = System.currentTimeMillis();
+                }
+            }
+
+            if (!_face) {
+                currentStatus = 1;
+                _face = true;
+                mFaceGraphic.setIsReady(true, 1);
+                mFaceGraphic.updateFace(face);
+            }
+
+            boolean isSmiling = face.getIsSmilingProbability() > SMILING_THRESHOLD;
+            if (isSmiling && _face && currentStatus == 1 && !_smile) {
+                currentStatus = 2;
+                _smile = true;
+                mFaceGraphic.setIsReady(true, 2);
+                mFaceGraphic.updateFace(face);
+                tStart = System.currentTimeMillis();
+            }
+
+
+            float leftEye = face.getIsLeftEyeOpenProbability();
+            float rightEye = face.getIsRightEyeOpenProbability();
+
+            if (Math.abs(leftEye - rightEye) >= WINK_THRESHOLD) {
+                if (elapsedSeconds >= 5) {
+                    if (leftEye < rightEye && currentStatus == 3 && _face && _smile && !_wink_l) {
+                        currentStatus = 4;
+                        _wink_l = true;
+                        mFaceGraphic.setIsReady(true, 4);
+                        mFaceGraphic.updateFace(face);
+                        tStart = System.currentTimeMillis();
+                    }
+                }
+            }
+
+
+
+
+
+            if (Math.abs(leftEye - rightEye) >= WINK_THRESHOLD) {
+                if (elapsedSeconds >= 5) {
+                    if (leftEye > rightEye && currentStatus == 5 && _face && _smile && _wink_l && !_wink_r) {
+                        currentStatus = 6;
+                        _wink_r = true;
+                        mFaceGraphic.setIsReady(true, 6);
+                        mFaceGraphic.updateFace(face);
+                        tStart = System.currentTimeMillis();
+                    }
+                }
+            }
+
+            mFaceGraphic.setIsReady(true, currentStatus);
         }
 
         /**
